@@ -7,7 +7,7 @@ import time
 
 #get url video from file txt
 def getlinkfromtxt():
-    file_path = "C:\\Users\\ADMIN\\Desktop\\PyThon\\Link\\LinkTikTok.txt"
+    file_path = "C:\\Users\\ADMIN\\Desktop\\Tool_DownLoad\\PyThon\\Link\\LinkTikTok.txt"
     with open(file_path, "r") as file:
         link = file.read()
     return(link)
@@ -24,7 +24,6 @@ def clickfistvideo(driver):
 def getvideo(video_src):
     #call function download video 
     download_video(video_src)
-    print("Đường dẫn video:", video_src)
     print("đa tai xong video")
 
 #open new tab
@@ -40,7 +39,7 @@ def login(driver):
     driver.get("https://studio.kuaishou.com/user/login?redirect=%2F")
 
 #function get url video after return url video
-def getvideoandreturnlink(driver):
+def getandclicknextvideo(driver):
     time.sleep(2)
     try:
         nextclick = driver.find_element(By.CLASS_NAME, "video-switch-next")
@@ -52,7 +51,13 @@ def getvideoandreturnlink(driver):
     # Lấy giá trị của thuộc tính "src"
     video_src = player_video.get_attribute("src")
     download_video(video_src)
-    return(video_src)
+
+#function get count video
+def getcountvideo():
+    file_path ="C:\\Users\\ADMIN\\Desktop\\Tool_DownLoad\\PyThon\\Link\\CountVideo.txt"
+    with open(file_path,"r") as file:
+        count = file.read()
+    return(count)
 
 def main(): 
     # call function get link url video
@@ -73,23 +78,13 @@ def main():
         first_video = driver.find_element(By.CLASS_NAME, "video-card")
         first_video.click()
     except Exception as e:
-        print("Không tìm thấy phần tử hoặc đã xảy ra lỗi:", e)
-    print("log : dang click fist video")
-    count = 10
+        print("Không tìm thấy video đầu tiên")
+    count =int(getcountvideo())
     while count != 0:
-        time.sleep(2)
-        try:
-            nextclick = driver.find_element(By.CLASS_NAME, "video-switch-next")
-            nextclick.click()
-            #time.sleep(2)
-        except Exception as e:
-            print("Không tìm thấy video tiếp theo hoặc đã xảy ra lỗi:", e)
-        player_video = driver.find_element(By.CLASS_NAME,"player-video")       
-        # Lấy giá trị của thuộc tính "src"
-        video_src = player_video.get_attribute("src")
-        getvideo(video_src)
-        count =count-1              
+       getandclicknextvideo(driver)
+       count =count-1              
     driver.close()
     driver.quit()
+    print("Đã tải xong video")
 if __name__ =="__main__":
     main()
