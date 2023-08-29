@@ -1,7 +1,8 @@
 import subprocess
-
+import os
 def download_video(video_url):
-    file_path = "C:\\Users\\ADMIN\\Desktop\\Tool_DownLoad\\PyThon\\Link\\Output.txt"
+    current_dir = os.path.dirname(os.path.abspath(__file__))                                
+    file_path = os.path.join(current_dir, 'Link', 'Output.txt')
     with open(file_path, "r") as file:
         link = file.read()
     print(link)

@@ -3,11 +3,13 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from Down import download_video
+import os
 import time
 
-#get url video from file txt
+#get url tiktok from file txt
 def getlinkfromtxt():
-    file_path = "C:\\Users\\ADMIN\\Desktop\\Tool_DownLoad\\PyThon\\Link\\LinkTikTok.txt"
+    current_dir = os.path.dirname(os.path.abspath(__file__))                                
+    file_path = os.path.join(current_dir, 'Link', 'LinkTikTok.txt')
     with open(file_path, "r") as file:
         link = file.read()
     return(link)
@@ -54,7 +56,8 @@ def getandclicknextvideo(driver):
 
 #function get count video
 def getcountvideo():
-    file_path ="C:\\Users\\ADMIN\\Desktop\\Tool_DownLoad\\PyThon\\Link\\CountVideo.txt"
+    current_dir = os.path.dirname(os.path.abspath(__file__))                                
+    file_path = os.path.join(current_dir, 'Link', 'CountVideo.txt')
     with open(file_path,"r") as file:
         count = file.read()
     return(count)
