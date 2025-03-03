@@ -1,93 +1,95 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
-from Down import download_video
-import os
 import time
+import logging
+from Down import download_video
 
-#get url tiktok from file txt
-def getlinkfromtxt():
-    current_dir = os.path.dirname(os.path.abspath(__file__))                                
-    file_path = os.path.join(current_dir, 'Link', 'LinkTikTok.txt')
-    with open(file_path, "r") as file:
-        link = file.read()
-    return(link)
+# Ẩn log của Selenium
+logging.getLogger("selenium").setLevel(logging.CRITICAL)
 
-#click vào video đầu tiên của kênh
-def clickfistvideo(driver):
-    try:
-        first_video = driver.find_element(By.CLASS_NAME, "video-card")
-        first_video.click()
-    except Exception as e:
-        print("Không tìm thấy phần tử hoặc đã xảy ra lỗi:", e)
+def setup_driver(use_profile=False):
+    options = Options()
+    options.add_argument("--log-level=3")        # Tắt log trình duyệt
+    options.add_argument("--mute-audio")         # Tắt âm thanh của Chrome
+    options.add_argument("--headless=new")       # Chạy Chrome ẩn (tùy chọn)
+    
+    if use_profile:
+        options.add_argument("--user-data-dir=C:/Users/trung/AppData/Local/Google/Chrome/User Data")
+        options.add_argument("--profile-directory=Default")
 
-#lấy link của video 
-def getvideo(video_src):
-    #call function download video 
-    download_video(video_src)
-    print("đa tai xong video")
+    driver = webdriver.Chrome(options=options)
+    return driver
 
-#open new tab
-def opennewtap(driver):
-    driver.execute_script("window.open('', '_blank');")
-
-#switch to new tab
-def switchtotab(driver):
-    driver.switch_to.window(driver.window_handles[-1])
-  
-#function login
-def login(driver):
-    driver.get("https://studio.kuaishou.com/user/login?redirect=%2F")
-
-#function get url video after return url video
-def getandclicknextvideo(driver):
-    time.sleep(2)
-    try:
-        nextclick = driver.find_element(By.CLASS_NAME, "video-switch-next")
-        nextclick.click()
-        #time.sleep(2)
-    except Exception as e:
-        print("Không tìm thấy video tiếp theo hoặc đã xảy ra lỗi:", e)
-    player_video = driver.find_element(By.CLASS_NAME,"player-video")       
-    # Lấy giá trị của thuộc tính "src"
-    video_src = player_video.get_attribute("src")
-    download_video(video_src)
-
-#function get count video
-def getcountvideo():
-    current_dir = os.path.dirname(os.path.abspath(__file__))                                
-    file_path = os.path.join(current_dir, 'Link', 'CountVideo.txt')
-    with open(file_path,"r") as file:
-        count = file.read()
-    return(count)
-
-def main(): 
-    # call function get link url video
-    link = getlinkfromtxt()
-
-    # Tạo driver sử dụng Chrome Driver
-    driver = webdriver.Chrome()
-
-    #login by Qr code
-    login(driver)
-
-    #open tab with link after reload tab 
-    driver.get(link)
-    driver.refresh()
+def download_single_video(driver):
     time.sleep(5)
-    # Tìm và click vào phần tử đầu tiên có class name là "video-card video-item vertical"
+    try:
+        video_element = driver.find_element(By.CSS_SELECTOR, ".kwai-player-container-video video")
+        video_src = video_element.get_attribute("src")
+        if video_src:
+            download_video(video_src)
+            print("✅ Đã tải xong video!")
+        else:
+            print("❌ Không tìm thấy video.")
+    except Exception as e:
+        print("❌ Lỗi khi tải video:", e)
+
+def download_batch_videos(driver, count):
     try:
         first_video = driver.find_element(By.CLASS_NAME, "video-card")
         first_video.click()
-    except Exception as e:
-        print("Không tìm thấy video đầu tiên")
-    count =int(getcountvideo())
-    while count != 0:
-       getandclicknextvideo(driver)
-       count =count-1              
-    driver.close()
-    driver.quit()
-    print("Đã tải xong video")
-if __name__ =="__main__":
+    except:
+        print("❌ Không tìm thấy video đầu tiên.")
+        return
+    
+    while count > 0:
+        time.sleep(2)
+        try:
+            # Tìm thẻ video trong class "kwai-player-container-video"
+            video_element = driver.find_element(By.CSS_SELECTOR, ".kwai-player-container-video video")
+            video_src = video_element.get_attribute("src")
+            if video_src:
+                download_video(video_src)
+                print(f"✅ Đã tải video {count}")
+
+            # Click vào nút "Next"
+            next_button = driver.find_element(By.CSS_SELECTOR, ".switch-item.video-switch-next")
+            next_button.click()
+        except Exception as e:
+            print("❌ Không tìm thấy video hoặc đã hết danh sách.", e)
+            break
+
+        count -= 1
+
+def main():
+    while True:
+        print("\n🔹 Chọn chế độ tải video:")
+        print("1 - Tải 1 video")
+        print("2 - Tải hàng loạt")
+        print("0 - Thoát")
+        choice = input("Nhập số (0, 1, 2): ")
+
+        if choice == "0":
+            print("👋 Thoát chương trình!")
+            break
+
+        url = input("Nhập vào URL muốn tải: ")  # Nhập URL trước
+        print(f"🌐 Đang mở URL: {url}")
+
+        driver = setup_driver(use_profile=True)
+        driver.get(url)  # Mở trang web trước
+        time.sleep(5)  # Chờ trang tải xong
+
+        if choice == "1":
+            download_single_video(driver)
+        elif choice == "2":
+            count = int(input("📌 Nhập số lượng video muốn tải: "))
+            download_batch_videos(driver, count)
+        else:
+            print("❌ Lựa chọn không hợp lệ!")
+
+        driver.quit()
+        print("✅ Hoàn thành!")
+
+if __name__ == "__main__":
     main()
