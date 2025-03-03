@@ -12,7 +12,7 @@ def setup_driver(use_profile=False):
     options = Options()
     options.add_argument("--log-level=3")        # Tắt log trình duyệt
     options.add_argument("--mute-audio")         # Tắt âm thanh của Chrome
-    options.add_argument("--headless=new")       # Chạy Chrome ẩn (tùy chọn)
+    #options.add_argument("--headless=new")       # Chạy Chrome ẩn (tùy chọn)
     
     if use_profile:
         options.add_argument("--user-data-dir=C:/Users/trung/AppData/Local/Google/Chrome/User Data")
@@ -36,7 +36,7 @@ def download_single_video(driver):
 
 def download_batch_videos(driver, count):
     try:
-        first_video = driver.find_element(By.CLASS_NAME, "video-card")
+        first_video = driver.find_element(By.CLASS_NAME, "video-card-main")
         first_video.click()
     except:
         print("❌ Không tìm thấy video đầu tiên.")
